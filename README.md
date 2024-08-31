@@ -7,7 +7,7 @@
 Install with [npm](https://www.npmjs.com/):
 
 ```sh
-$ npm install --save @iankulin/logger
+$ npm install @iankulin/logger
 ```
 
 ## Usage
