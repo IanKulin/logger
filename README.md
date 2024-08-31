@@ -4,7 +4,7 @@
 
 ## Install
 
-Install with [npm](https://www.npmjs.com/):
+Install with [npm](https://npmjs.org/package/@iankulin/logger):
 
 ```sh
 $ npm install @iankulin/logger
