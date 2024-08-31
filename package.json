@@ -1,8 +1,12 @@
 {
   "name": "@iankulin/logger",
-  "version": "1.0.0",
+  "version": "0.1.1",
+  "type": "module",
   "description": "Small, simple logger",
-  "main": "logger.js",
+  "main": "./lib/logger.js",
+  "files": [
+    "/lib"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,5 +14,7 @@
     "logger"
   ],
   "author": "iankulin",
-  "license": "MIT"
+  "license": "MIT",  "exports": {
+    ".": "./logger.js"
+  }
 }
