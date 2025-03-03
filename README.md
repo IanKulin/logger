@@ -37,6 +37,7 @@ const simple_logger = new Logger({ level: 'debug', format: 'simple' });
 
 simple_logger.error('Unable to fetch student');
 ```
+```
 [2025-03-03T11:14:08.802Z] [ERROR] [test.js:14] Unable to fetch student
 ```
 
