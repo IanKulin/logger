@@ -1,6 +1,6 @@
 {
   "name": "@iankulin/logger",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "description": "Small, simple logger",
   "main": "./lib/logger.js",
