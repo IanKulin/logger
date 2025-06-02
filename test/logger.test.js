@@ -150,6 +150,82 @@ describe("Logger", () => {
     });
   });
 
+  describe("Level Management", () => {
+    it("should return current level when called without arguments", () => {
+      const logger = new Logger({ level: "debug" });
+      assert.strictEqual(logger.level(), "debug");
+    });
+
+    it("should return new level when setting level", () => {
+      const logger = new Logger();
+      const result = logger.level("error");
+      assert.strictEqual(result, "error");
+      assert.strictEqual(logger.options.level, "error");
+    });
+
+    it("should allow method chaining after setting level", () => {
+      const logger = new Logger();
+      // This should not throw and should return a level
+      const result = logger.level("warn");
+      assert.strictEqual(result, "warn");
+      assert.strictEqual(typeof result, "string");
+    });
+
+    it("should throw error for invalid log level", () => {
+      const logger = new Logger();
+      assert.throws(() => {
+        logger.level("invalid");
+      }, /Invalid log level: invalid/);
+    });
+
+    it("should have setLevel method as alias", () => {
+      const logger = new Logger();
+      assert.strictEqual(typeof logger.setLevel, "function");
+    });
+
+    it("should set level correctly with setLevel method", () => {
+      const logger = new Logger();
+      const result = logger.setLevel("debug");
+      assert.strictEqual(result, "debug");
+      assert.strictEqual(logger.options.level, "debug");
+    });
+
+    it("should return current level with setLevel when no args", () => {
+      const logger = new Logger({ level: "warn" });
+      const result = logger.setLevel();
+      assert.strictEqual(result, "warn");
+    });
+
+    it("should throw error for invalid level in setLevel", () => {
+      const logger = new Logger();
+      assert.throws(() => {
+        logger.setLevel("invalid");
+      }, /Invalid log level: invalid/);
+    });
+
+    it("should maintain consistency between level() and setLevel()", () => {
+      const logger = new Logger();
+
+      logger.level("error");
+      assert.strictEqual(logger.setLevel(), "error");
+
+      logger.setLevel("debug");
+      assert.strictEqual(logger.level(), "debug");
+    });
+
+    it("should support fluent interface pattern", () => {
+      const logger = new Logger();
+
+      // This demonstrates the fluent interface working
+      const currentLevel = logger.level("warn");
+      assert.strictEqual(currentLevel, "warn");
+
+      // Both methods should return the current level for chaining
+      assert.strictEqual(logger.level("info"), "info");
+      assert.strictEqual(logger.setLevel("debug"), "debug");
+    });
+  });
+
   describe("JSON Formatter", () => {
     before(mockConsole);
     after(restoreConsole);
@@ -720,6 +796,58 @@ describe("Logger", () => {
       const parsed = JSON.parse(capturedLogs[0]);
       assert.strictEqual(parsed.level, "debug");
       assert.strictEqual(parsed.levelNumber, 3);
+    });
+  });
+
+  describe("Caller Detection Error Throttling", () => {
+    before(mockConsole);
+    after(restoreConsole);
+
+    it("should suppress caller error messages after threshold", () => {
+      capturedLogs = [];
+
+      // Capture console.error calls
+      const capturedErrors = [];
+      const originalConsoleError = console.error;
+      console.error = (...args) => {
+        capturedErrors.push(args);
+      };
+
+      const logger = new Logger({ format: "json" });
+
+      // Mock Error constructor to create errors with no usable stack
+      const originalError = Error;
+      global.Error = class extends originalError {
+        constructor(...args) {
+          super(...args);
+          // Set stack to something that will cause the parsing to fail
+          Object.defineProperty(this, "stack", {
+            get() {
+              throw new Error("Stack access failed");
+            },
+          });
+        }
+      };
+
+      try {
+        // Call logger 7 times to exceed the threshold (5)
+        for (let i = 0; i < 7; i++) {
+          logger.info(`test message ${i + 1}`);
+        }
+
+        // Restore everything before assertions
+        global.Error = originalError;
+        console.error = originalConsoleError;
+
+        // Should have logged 7 messages despite caller errors
+        assert.strictEqual(capturedLogs.length, 7);
+
+        // Should have exactly 6 console.error calls
+        assert.strictEqual(capturedErrors.length, 6);
+      } finally {
+        global.Error = originalError;
+        console.error = originalConsoleError;
+      }
     });
   });
 });

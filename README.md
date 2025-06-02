@@ -41,3 +41,7 @@ simple_logger.error('Unable to fetch student');
 [2025-03-03T11:14:08.802Z] [ERROR] [test.js:14] Unable to fetch student
 ```
 
+## Changelog
+0.1.5 Initial
+0.1.6 Tests, better error handling, loop detection
+
