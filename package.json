@@ -1,21 +1,37 @@
 {
   "name": "@iankulin/logger",
-  "version": "0.1.5",
+  "version": "1.0.0",
   "type": "module",
-  "description": "Small, simple logger",
+  "description": "console.log() utility with colours",
   "main": "./lib/logger.js",
   "files": [
-    "/lib"
+    "lib/logger.js",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test"
   },
   "keywords": [
-    "logger"
+    "logger",
+    "logging",
+    "console",
+    "debug"
   ],
-  "author": "iankulin",
+  "author": "IanKulin",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IanKulin/logger.git"
+  },
+  "homepage": "https://github.com/IanKulin/logger",
+  "bugs": {
+    "url": "https://github.com/IanKulin/logger/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "exports": {
-    ".": "./logger.js"
+    ".": "./lib/logger.js"
   }
 }
