@@ -1,4 +1,3 @@
-import { format } from 'path';
 import Logger from './lib/logger.js';
 const logger = new Logger({ level: 'debug' });
 
