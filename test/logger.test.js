@@ -31,7 +31,7 @@ describe("Logger", () => {
     it("should throw error for invalid log level", () => {
       assert.throws(() => {
         new Logger({ level: "invalid" });
-      }, /Invalid log level: invalid. Valid levels are: error, warn, info, debug/);
+      }, /Invalid log level: invalid. Valid levels are: silent, error, warn, info, debug/);
     });
 
     it("should throw error for non-object colours", () => {
@@ -78,6 +78,7 @@ describe("Logger", () => {
       assert.strictEqual(logger.options.level, "info");
       assert.strictEqual(logger.options.format, "json");
       assert.deepStrictEqual(logger.options.levels, {
+        silent: -1,
         error: 0,
         warn: 1,
         info: 2,
@@ -223,6 +224,33 @@ describe("Logger", () => {
       // Both methods should return the current level for chaining
       assert.strictEqual(logger.level("info"), "info");
       assert.strictEqual(logger.setLevel("debug"), "debug");
+    });
+
+    it("should suppress all output when level is silent", () => {
+      capturedLogs = [];
+      const logger = new Logger({ level: "silent" });
+
+      logger.error("error message");
+      logger.warn("warn message");
+      logger.info("info message");
+      logger.debug("debug message");
+
+      // No messages should be logged
+      assert.strictEqual(capturedLogs.length, 0);
+    });
+
+    it("should allow setting level to silent", () => {
+      const logger = new Logger();
+      const result = logger.level("silent");
+      assert.strictEqual(result, "silent");
+      assert.strictEqual(logger.options.level, "silent");
+    });
+
+    it("should work with setLevel for silent level", () => {
+      const logger = new Logger();
+      const result = logger.setLevel("silent");
+      assert.strictEqual(result, "silent");
+      assert.strictEqual(logger.options.level, "silent");
     });
   });
 
@@ -648,6 +676,14 @@ describe("Logger", () => {
 
     it("should return default values when caller detection fails completely", () => {
       capturedLogs = [];
+
+      // Capture console.error as well as console.log
+      const capturedErrors = [];
+      const originalConsoleError = console.error;
+      console.error = (...args) => {
+        capturedErrors.push(args);
+      };
+
       const logger = new Logger({ format: "json" });
 
       // Mock Error constructor to create an error with no usable stack
@@ -663,8 +699,9 @@ describe("Logger", () => {
       try {
         logger.info("test message");
 
-        // Restore Error before assertions
+        // Restore everything before assertions
         global.Error = originalError;
+        console.error = originalConsoleError;
 
         const parsed = JSON.parse(capturedLogs[0]);
         assert.strictEqual(parsed.callerFile, "unknown");
@@ -672,6 +709,7 @@ describe("Logger", () => {
         assert.strictEqual(parsed.msg, "test message");
       } finally {
         global.Error = originalError;
+        console.error = originalConsoleError;
       }
     });
   });
