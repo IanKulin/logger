@@ -256,5 +256,6 @@ const logger = new Logger({ level: 'silent' });
 
 ## Versions
 
+- **1.0.0** - Production release
 - **0.1.6** - Added tests, improved error handling, caller detection loop prevention, `silent` logging level
 - **0.1.5** - Initial release
