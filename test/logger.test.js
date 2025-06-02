@@ -327,6 +327,119 @@ describe("Logger", () => {
     });
   });
 
+  describe("Formatter Error Handling", () => {
+    before(mockConsole);
+    after(restoreConsole);
+
+    it("should fall back to JSON formatter when custom formatter throws", () => {
+      capturedLogs = [];
+      const logger = new Logger({ format: "simple" });
+
+      // Replace the simple formatter with one that throws
+      logger.formatters.simple = function (logEntry) {
+        throw new Error("Custom formatter error");
+      };
+
+      logger.info("test message");
+
+      // Should still produce output using JSON formatter fallback
+      assert.strictEqual(capturedLogs.length, 1);
+
+      // Should be valid JSON (fallback to JSON formatter)
+      const logOutput = capturedLogs[0];
+      assert.doesNotThrow(() => {
+        const parsed = JSON.parse(logOutput);
+        assert.strictEqual(parsed.msg, "test message");
+        assert.ok(
+          parsed.formatterError.includes(
+            "Formatter failed: Custom formatter error"
+          )
+        );
+      });
+    });
+
+    it("should handle complete formatter failure with minimal output", () => {
+      capturedLogs = [];
+      const logger = new Logger({ format: "simple" });
+
+      // Replace both formatters with ones that throw
+      logger.formatters.simple = function () {
+        throw new Error("Simple formatter error");
+      };
+      logger.formatters.json = function () {
+        throw new Error("JSON formatter error");
+      };
+
+      logger.info('test message with "quotes"');
+
+      // Should still produce some output
+      assert.strictEqual(capturedLogs.length, 1);
+
+      // Should be valid JSON with minimal content
+      const logOutput = capturedLogs[0];
+      assert.doesNotThrow(() => {
+        const parsed = JSON.parse(logOutput);
+        assert.strictEqual(parsed.level, "info");
+        assert.strictEqual(parsed.msg, 'test message with "quotes"');
+        assert.ok(
+          parsed.formatterError.includes(
+            "Formatter failed: Simple formatter error"
+          )
+        );
+      });
+    });
+
+    it("should not crash when formatter returns non-string", () => {
+      capturedLogs = [];
+      const logger = new Logger({ format: "simple" });
+
+      // Replace formatter with one that returns an object instead of string
+      logger.formatters.simple = function (logEntry) {
+        return { notAString: true };
+      };
+
+      logger.info("test message");
+
+      // Should still produce output (fallback should handle this)
+      assert.strictEqual(capturedLogs.length, 1);
+
+      // Should be valid JSON from fallback
+      const logOutput = capturedLogs[0];
+      assert.doesNotThrow(() => {
+        const parsed = JSON.parse(logOutput);
+        assert.strictEqual(parsed.msg, "test message");
+      });
+    });
+
+    it("should preserve original formatters after error", () => {
+      capturedLogs = [];
+      const logger = new Logger({ format: "simple" });
+
+      // Temporarily break the formatter
+      const originalSimple = logger.formatters.simple;
+      logger.formatters.simple = function () {
+        throw new Error("Temporary error");
+      };
+
+      logger.info("first message");
+
+      // Restore the formatter
+      logger.formatters.simple = originalSimple;
+
+      logger.info("second message");
+
+      // First message should have used fallback, second should work normally
+      assert.strictEqual(capturedLogs.length, 2);
+
+      // First log should be JSON (fallback)
+      assert.doesNotThrow(() => JSON.parse(capturedLogs[0]));
+
+      // Second log should be simple format
+      assert.ok(capturedLogs[1].includes("[INFO ]"));
+      assert.ok(capturedLogs[1].includes("second message"));
+    });
+  });
+
   describe("Simple Formatter", () => {
     before(mockConsole);
     after(restoreConsole);
