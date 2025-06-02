@@ -27,7 +27,6 @@ function restoreTTY() {
 }
 
 describe("Logger", () => {
-    
   describe("Constructor Validation", () => {
     it("should throw error for invalid log level", () => {
       assert.throws(() => {
@@ -198,6 +197,133 @@ describe("Logger", () => {
       });
       assert.ok(parsed.time.includes("T"));
       assert.ok(parsed.time.includes("Z"));
+    });
+
+    it("should handle circular references in log entry", () => {
+      capturedLogs = [];
+      const logger = new Logger({ format: "json" });
+
+      // Create a circular reference by modifying the logger's formatters
+      const originalJsonFormatter = logger.formatters.json;
+      logger.formatters.json = function (logEntry) {
+        // Add a circular reference to the logEntry
+        const circular = { self: null };
+        circular.self = circular;
+        logEntry.circular = circular;
+
+        // Call the original formatter which should handle the error
+        return originalJsonFormatter.call(this, logEntry);
+      };
+
+      logger.info("test with circular reference");
+
+      const logOutput = capturedLogs[0];
+      // Should be valid JSON despite circular reference
+      assert.doesNotThrow(() => {
+        const parsed = JSON.parse(logOutput);
+        // Should contain error information
+        assert.ok(parsed.jsonError.includes("JSON stringify failed"));
+        assert.strictEqual(parsed.msg, "test with circular reference");
+      });
+    });
+
+    it("should handle JSON stringify errors with fallback", () => {
+      capturedLogs = [];
+      const logger = new Logger({ format: "json" });
+
+      // Create a problematic object that will cause JSON.stringify to fail
+      const problematic = {};
+      Object.defineProperty(problematic, "badProp", {
+        get() {
+          throw new Error("Property access error");
+        },
+        enumerable: true,
+      });
+
+      // Mock the log method to inject the problematic object
+      const originalLog = logger.log;
+      logger.log = function (level, message, ...args) {
+        const result = originalLog.call(this, level, message, ...args);
+        // This won't actually work because log() doesn't expose logEntry,
+        // so let's test the formatter directly instead
+        return result;
+      };
+
+      // Test the formatter directly with a problematic object
+      const problematicLogEntry = {
+        level: "info",
+        msg: "test message",
+        problematic: problematic,
+      };
+
+      const result = logger.formatters.json(problematicLogEntry);
+
+      // Should produce valid JSON with error info
+      assert.doesNotThrow(() => {
+        const parsed = JSON.parse(result);
+        assert.ok(parsed.jsonError.includes("JSON stringify failed"));
+      });
+    });
+
+    it("should handle extreme JSON stringify failures", () => {
+      capturedLogs = [];
+      const logger = new Logger({ format: "json" });
+
+      // Create an object that will fail even the safe fallback
+      // by mocking JSON.stringify to always throw
+      const originalStringify = JSON.stringify;
+      let callCount = 0;
+
+      JSON.stringify = function (...args) {
+        callCount++;
+        if (callCount <= 2) {
+          throw new Error("Mock JSON error");
+        }
+        return originalStringify.apply(this, args);
+      };
+
+      try {
+        const result = logger.formatters.json({
+          level: "error",
+          msg: "test message",
+        });
+
+        // Should still produce valid JSON string even after multiple failures
+        assert.doesNotThrow(() => {
+          const parsed = JSON.parse(result);
+          assert.strictEqual(parsed.level, "error");
+          assert.strictEqual(parsed.msg, "test message");
+          assert.ok(parsed.jsonError.includes("Multiple JSON errors occurred"));
+        });
+      } finally {
+        JSON.stringify = originalStringify;
+      }
+    });
+
+    it("should escape quotes in fallback JSON string", () => {
+      capturedLogs = [];
+      const logger = new Logger({ format: "json" });
+
+      // Mock JSON.stringify to always fail to test the final fallback
+      const originalStringify = JSON.stringify;
+      JSON.stringify = function () {
+        throw new Error("Always fails");
+      };
+
+      try {
+        const result = logger.formatters.json({
+          level: "info",
+          msg: 'Message with "quotes" in it',
+        });
+
+        // Should be valid JSON with escaped quotes
+        assert.doesNotThrow(() => {
+          const parsed = JSON.parse(result);
+          assert.strictEqual(parsed.msg, 'Message with "quotes" in it');
+        });
+      } finally {
+        JSON.stringify = originalStringify;
+      }
     });
   });
 
