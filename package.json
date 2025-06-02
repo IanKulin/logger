@@ -1,6 +1,6 @@
 {
   "name": "@iankulin/logger",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "console.log() utility with colours",
   "main": "./lib/logger.js",
