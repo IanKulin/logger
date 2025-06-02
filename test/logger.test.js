@@ -285,25 +285,32 @@ describe("Logger", () => {
       assert.ok(parsed.callerLine > 0);
     });
 
-    it("should handle caller detection errors gracefully", () => {
+    it("should return default values when caller detection fails completely", () => {
       capturedLogs = [];
-      const logger = new Logger();
+      const logger = new Logger({ format: "json" });
 
-      // Mock Error.prepareStackTrace to throw
-      const originalPrepareStackTrace = Error.prepareStackTrace;
-      Error.prepareStackTrace = () => {
-        throw new Error("Mock error");
+      // Mock Error constructor to create an error with no usable stack
+      const originalError = Error;
+      global.Error = class extends originalError {
+        constructor(...args) {
+          super(...args);
+          // Create a stack that will cause the detection to fail
+          this.stack = null;
+        }
       };
 
       try {
         logger.info("test message");
-        // Should still log despite caller detection error
-        assert.strictEqual(capturedLogs.length, 1);
+
+        // Restore Error before assertions
+        global.Error = originalError;
 
         const parsed = JSON.parse(capturedLogs[0]);
+        assert.strictEqual(parsed.callerFile, "unknown");
+        assert.strictEqual(parsed.callerLine, 0);
         assert.strictEqual(parsed.msg, "test message");
       } finally {
-        Error.prepareStackTrace = originalPrepareStackTrace;
+        global.Error = originalError;
       }
     });
   });
