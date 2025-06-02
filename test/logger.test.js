@@ -27,6 +27,52 @@ function restoreTTY() {
 }
 
 describe("Logger", () => {
+    
+  describe("Constructor Validation", () => {
+    it("should throw error for invalid log level", () => {
+      assert.throws(() => {
+        new Logger({ level: "invalid" });
+      }, /Invalid log level: invalid. Valid levels are: error, warn, info, debug/);
+    });
+
+    it("should throw error for non-object colours", () => {
+      assert.throws(() => {
+        new Logger({ colours: "not an object" });
+      }, /colours option must be an object/);
+    });
+
+    it("should throw error for non-object levels", () => {
+      assert.throws(() => {
+        new Logger({ levels: "not an object" });
+      }, /levels option must be an object/);
+    });
+
+    it("should throw error for invalid level values", () => {
+      assert.throws(() => {
+        new Logger({ levels: { error: -1 } });
+      }, /Level value for 'error' must be a non-negative integer/);
+
+      assert.throws(() => {
+        new Logger({ levels: { error: "not a number" } });
+      }, /Level value for 'error' must be a non-negative integer/);
+
+      assert.throws(() => {
+        new Logger({ levels: { error: 1.5 } });
+      }, /Level value for 'error' must be a non-negative integer/);
+    });
+
+    it("should accept valid options without throwing", () => {
+      assert.doesNotThrow(() => {
+        new Logger({
+          level: "debug",
+          format: "simple",
+          colours: { error: "\x1b[31m" },
+          levels: { custom: 4 },
+        });
+      });
+    });
+  });
+
   describe("Core Functionality", () => {
     it("should instantiate with default options", () => {
       const logger = new Logger();
@@ -354,15 +400,12 @@ describe("Logger", () => {
     before(mockConsole);
     after(restoreConsole);
 
-    it("should fall back to JSON formatter for invalid format", () => {
+    it("should throw error for invalid format", () => {
       capturedLogs = [];
-      const logger = new Logger({ format: "invalid" });
-      logger.info("test message");
 
-      // Should produce JSON despite invalid format
-      assert.doesNotThrow(() => {
-        JSON.parse(capturedLogs[0]);
-      });
+      assert.throws(() => {
+        new Logger({ format: "invalid" });
+      }, /Invalid format: invalid. Valid formats are: json, simple/);
     });
 
     it("should merge options correctly", () => {
