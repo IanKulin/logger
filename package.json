@@ -1,11 +1,13 @@
 {
   "name": "@iankulin/logger",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "console.log() utility with colours",
   "main": "./lib/logger.js",
+  "types": "./lib/logger.d.ts",
   "files": [
     "lib/logger.js",
+    "lib/logger.d.ts",
     "README.md",
     "LICENSE"
   ],
