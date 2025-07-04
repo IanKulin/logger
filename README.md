@@ -6,7 +6,7 @@
 
 - **Multiple log levels**: silent, error, warn, info, debug
 - **Flexible output formats**: JSON or simple text
-- **Caller detection**: Automatically identifies source file and line number
+- **Caller detection**: Automatically identifies source file and line number based on log level
 - **Color support**: Automatic TTY detection with colored output
 - **ESM only**: Modern ES module support
 
@@ -107,27 +107,7 @@ logger.error('Something failed');
 
 ### Message Formatting
 
-The logger uses Node.js `util.format()` for message formatting:
-
-```js
-const logger = new Logger();
-
-logger.info('User %s has %d points', 'Alice', 150);
-logger.warn('Object: %j', { key: 'value', count: 42 });
-logger.error('Processing failed at %s', new Date().toISOString());
-```
-
-### Silent Mode
-
-Completely suppress all logging output:
-
-```js
-const logger = new Logger({ level: 'silent' });
-
-// None of these will produce any output
-logger.error('Critical error');
-logger.info('Info message');
-```
+The logger uses Node.js `util.format()` for message formatting with placeholders like `%s`, `%d`, `%j`.
 
 ### Custom Colors
 
@@ -142,131 +122,74 @@ const logger = new Logger({
 });
 ```
 
+### Caller Level Control
+
+Control when caller information (file and line number) is included in log messages. This is useful for performance optimization since caller detection can be expensive.
+
+```js
+// Default: only include caller info for warnings and errors
+const logger = new Logger({ callerLevel: 'warn' });
+
+logger.error('Critical error'); // Includes caller info
+logger.warn('Warning message'); // Includes caller info
+logger.info('Info message'); // No caller info
+logger.debug('Debug message'); // No caller info
+```
+
+**JSON Format Output:**
+
+```json
+{"level":"error","msg":"Critical error","callerFile":"/path/to/file.js","callerLine":42}
+{"level":"info","msg":"Info message"}
+```
+
+**Simple Format Output:**
+
+```
+[2025-07-04 13:13] [ERROR] [app.js:42] Critical error
+[2025-07-04 13:13] [INFO ] Info message
+```
+
+**Available callerLevel Options:**
+
+- `'silent'` - Never include caller info (best performance)
+- `'error'` - Only include caller info for errors
+- `'warn'` - Include caller info for warnings and errors (default)
+- `'info'` - Include caller info for info, warnings, and errors
+- `'debug'` - Always include caller info
+
+**Performance Tip:** For production applications that primarily log info/debug messages, setting `callerLevel: 'error'` can significantly improve performance by avoiding expensive stack trace analysis for routine logging.
+
 ## Constructor Options
 
-| Option    | Type   | Default   | Description                                                                        |
-| --------- | ------ | --------- | ---------------------------------------------------------------------------------- |
-| `level`   | string | `'info'`  | Minimum log level to output (`'silent'`, `'error'`, `'warn'`, `'info'`, `'debug'`) |
-| `format`  | string | `'json'`  | Output format (`'json'` or `'simple'`)                                             |
-| `colours` | object | See below | Color codes for each log level                                                     |
-| `levels`  | object | See below | Custom level names and numeric values                                              |
+| Option        | Type   | Default   | Description                                                                                     |
+| ------------- | ------ | --------- | ----------------------------------------------------------------------------------------------- |
+| `level`       | string | `'info'`  | Minimum log level to output (`'silent'`, `'error'`, `'warn'`, `'info'`, `'debug'`)              |
+| `format`      | string | `'json'`  | Output format (`'json'` or `'simple'`)                                                          |
+| `callerLevel` | string | `'warn'`  | Minimum log level to include caller info (`'silent'`, `'error'`, `'warn'`, `'info'`, `'debug'`) |
+| `colours`     | object | See below | Color codes for each log level                                                                  |
+| `levels`      | object | See below | Custom level names and numeric values                                                           |
 
-### Default Colors
-
-```js
-{
-  error: '\x1b[91m',   // Bright red
-  warn: '\x1b[33m',    // Yellow
-  info: '\x1b[94m',    // Bright blue
-  debug: '\x1b[37m',   // White
-  reset: '\x1b[0m'     // Reset
-}
-```
-
-### Default Levels
-
-```js
-{
-  silent: -1,
-  error: 0,
-  warn: 1,
-  info: 2,
-  debug: 3
-}
-```
-
-## API Reference
-
-### Constructor
-
-```js
-new Logger(options?)
-```
-
-Creates a new logger instance with optional configuration.
-
-### Methods
-
-#### `logger.error(message, ...args)`
-
-Logs an error message.
-
-#### `logger.warn(message, ...args)`
-
-Logs a warning message.
-
-#### `logger.info(message, ...args)`
-
-Logs an informational message.
-
-#### `logger.debug(message, ...args)`
-
-Logs a debug message.
-
-#### `logger.level(newLevel?)`
-
-- **Get**: `logger.level()` - Returns current log level
-- **Set**: `logger.level('debug')` - Sets log level and returns new level
-
-#### `logger.setLevel(newLevel?)`
-
-Alias for `logger.level()`. More explicit method for setting log levels.
-
-### Properties
-
-#### `logger.options`
-
-Access to the current configuration options.
-
-#### `logger.formatters`
-
-Object containing available formatters (`json`, `simple`). Can be extended with custom formatters.
-
-## Error Handling
-
-The logger includes robust error handling:
-
-- **Caller detection failures**: Falls back to default values without breaking
-- **JSON formatting errors**: Automatically handles circular references and non-serializable data
-- **Custom formatter errors**: Falls back to JSON format with error information
-- **Loop detection**: Prevents infinite error reporting from caller detection
-
-## Examples
-
-### Production Logging
+## Common Usage Patterns
 
 ```js
 import Logger from '@iankulin/logger';
 
-const logger = new Logger({
+// Production: JSON format with environment-based level
+const prodLogger = new Logger({
   level: process.env.LOG_LEVEL || 'info',
   format: 'json',
+  callerLevel: 'error', // Performance optimization
 });
 
-export default logger;
-```
-
-### Development Logging
-
-```js
-import Logger from '@iankulin/logger';
-
-const logger = new Logger({
+// Development: Simple format with debug level
+const devLogger = new Logger({
   level: 'debug',
   format: 'simple',
 });
 
-logger.debug('Starting application');
-logger.info('Server listening on port 3000');
-```
-
-### Test Environment
-
-```js
-import Logger from '@iankulin/logger';
-
-// Suppress all logging during tests
-const logger = new Logger({ level: 'silent' });
+// Testing: Silent mode
+const testLogger = new Logger({ level: 'silent' });
 ```
 
 ## Requirements

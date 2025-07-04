@@ -30,7 +30,7 @@ describe('Logger JSON Formatter', () => {
 
     it('should include all required fields in JSON output', () => {
       clearCapturedLogs();
-      const logger = new Logger({ format: 'json' });
+      const logger = new Logger({ format: 'json', callerLevel:'info' });
       logger.info('test message');
 
       const parsed = getFirstLogAsJSON();

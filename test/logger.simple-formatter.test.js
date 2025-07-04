@@ -46,7 +46,7 @@ describe('Logger Simple Formatter', () => {
 
     it('should include caller information', () => {
       clearCapturedLogs();
-      const logger = new Logger({ format: 'simple' });
+      const logger = new Logger({ format: 'simple', callerLevel: 'info' });
       logger.info('test message');
 
       const logOutput = getCapturedLogs()[0];
