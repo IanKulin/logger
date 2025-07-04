@@ -21,7 +21,7 @@ $ npm install @iankulin/logger
 ## Quick Start
 
 ```js
-import Logger from "@iankulin/logger";
+import Logger from '@iankulin/logger';
 
 const logger = new Logger();
 logger.info('Hello from logger');
@@ -33,7 +33,7 @@ logger.error('Something went wrong');
 ### Basic Logging
 
 ```js
-import Logger from "@iankulin/logger";
+import Logger from '@iankulin/logger';
 const logger = new Logger({ level: 'info' });
 
 logger.error('Critical error occurred');
@@ -75,19 +75,32 @@ logger.setLevel('warn');
 ### Output Formats
 
 #### JSON Format (Default)
+
 ```js
 const logger = new Logger({ format: 'json' });
 logger.info('Hello world');
 ```
+
 ```json
-{"level":"info","levelNumber":2,"time":"2025-06-02T12:00:00.000Z","pid":12345,"hostname":"my-computer","msg":"Hello world","callerFile":"file:///path/to/file.js","callerLine":3}
+{
+  "level": "info",
+  "levelNumber": 2,
+  "time": "2025-06-02T12:00:00.000Z",
+  "pid": 12345,
+  "hostname": "my-computer",
+  "msg": "Hello world",
+  "callerFile": "file:///path/to/file.js",
+  "callerLine": 3
+}
 ```
 
 #### Simple Format
+
 ```js
 const logger = new Logger({ format: 'simple' });
 logger.error('Something failed');
 ```
+
 ```
 [2025-06-02T12:00:00.000Z] [ERROR] [app.js:15] Something failed
 ```
@@ -121,29 +134,29 @@ logger.info('Info message');
 ```js
 const logger = new Logger({
   colours: {
-    error: '\x1b[31m',  // Red
-    warn: '\x1b[93m',   // Bright yellow
-    info: '\x1b[36m',   // Cyan
-    debug: '\x1b[90m'   // Dark gray
-  }
+    error: '\x1b[31m', // Red
+    warn: '\x1b[93m', // Bright yellow
+    info: '\x1b[36m', // Cyan
+    debug: '\x1b[90m', // Dark gray
+  },
 });
 ```
 
 ## Constructor Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `level` | string | `'info'` | Minimum log level to output (`'silent'`, `'error'`, `'warn'`, `'info'`, `'debug'`) |
-| `format` | string | `'json'` | Output format (`'json'` or `'simple'`) |
-| `colours` | object | See below | Color codes for each log level |
-| `levels` | object | See below | Custom level names and numeric values |
+| Option    | Type   | Default   | Description                                                                        |
+| --------- | ------ | --------- | ---------------------------------------------------------------------------------- |
+| `level`   | string | `'info'`  | Minimum log level to output (`'silent'`, `'error'`, `'warn'`, `'info'`, `'debug'`) |
+| `format`  | string | `'json'`  | Output format (`'json'` or `'simple'`)                                             |
+| `colours` | object | See below | Color codes for each log level                                                     |
+| `levels`  | object | See below | Custom level names and numeric values                                              |
 
 ### Default Colors
 
 ```js
 {
   error: '\x1b[91m',   // Bright red
-  warn: '\x1b[33m',    // Yellow  
+  warn: '\x1b[33m',    // Yellow
   info: '\x1b[94m',    // Bright blue
   debug: '\x1b[37m',   // White
   reset: '\x1b[0m'     // Reset
@@ -175,30 +188,38 @@ Creates a new logger instance with optional configuration.
 ### Methods
 
 #### `logger.error(message, ...args)`
+
 Logs an error message.
 
 #### `logger.warn(message, ...args)`
+
 Logs a warning message.
 
 #### `logger.info(message, ...args)`
+
 Logs an informational message.
 
 #### `logger.debug(message, ...args)`
+
 Logs a debug message.
 
 #### `logger.level(newLevel?)`
+
 - **Get**: `logger.level()` - Returns current log level
 - **Set**: `logger.level('debug')` - Sets log level and returns new level
 
 #### `logger.setLevel(newLevel?)`
+
 Alias for `logger.level()`. More explicit method for setting log levels.
 
 ### Properties
 
 #### `logger.options`
+
 Access to the current configuration options.
 
 #### `logger.formatters`
+
 Object containing available formatters (`json`, `simple`). Can be extended with custom formatters.
 
 ## Error Handling
@@ -213,24 +234,26 @@ The logger includes robust error handling:
 ## Examples
 
 ### Production Logging
+
 ```js
-import Logger from "@iankulin/logger";
+import Logger from '@iankulin/logger';
 
 const logger = new Logger({
   level: process.env.LOG_LEVEL || 'info',
-  format: 'json'
+  format: 'json',
 });
 
 export default logger;
 ```
 
 ### Development Logging
+
 ```js
-import Logger from "@iankulin/logger";
+import Logger from '@iankulin/logger';
 
 const logger = new Logger({
   level: 'debug',
-  format: 'simple'
+  format: 'simple',
 });
 
 logger.debug('Starting application');
@@ -238,8 +261,9 @@ logger.info('Server listening on port 3000');
 ```
 
 ### Test Environment
+
 ```js
-import Logger from "@iankulin/logger";
+import Logger from '@iankulin/logger';
 
 // Suppress all logging during tests
 const logger = new Logger({ level: 'silent' });
@@ -256,6 +280,7 @@ const logger = new Logger({ level: 'silent' });
 
 ## Versions
 
+- **1.1.0** - added { time: 'short' } default option, refactor tests
 - **1.0.2** - Added types for intellisense
 - **1.0.0** - Production release
 - **0.1.6** - Added tests, improved error handling, caller detection loop prevention, `silent` logging level
