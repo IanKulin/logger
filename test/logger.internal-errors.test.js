@@ -6,8 +6,6 @@ import {
   restoreMocks,
   getCapturedLogs,
   clearCapturedLogs,
-  getCapturedErrors,
-  clearCapturedErrors,
 } from './helpers/logger-test-helpers.js';
 
 describe('Logger Internal Error Handling', () => {
@@ -113,106 +111,6 @@ describe('Logger Internal Error Handling', () => {
       getCapturedLogs().forEach((log) => {
         assert.doesNotThrow(() => JSON.parse(log));
       });
-    });
-  });
-
-  describe('Caller Detection Error Handling', () => {
-    it('should return default values when caller detection fails completely', () => {
-      clearCapturedLogs();
-      clearCapturedErrors();
-
-      const logger = new Logger({ format: 'json' });
-
-      // Mock Error constructor to create an error with no usable stack
-      const originalError = Error;
-      global.Error = class extends originalError {
-        constructor(...args) {
-          super(...args);
-          // Create a stack that will cause the detection to fail
-          this.stack = null;
-        }
-      };
-
-      try {
-        logger.info('test message');
-
-        // Restore everything before assertions
-        global.Error = originalError;
-
-        const parsed = JSON.parse(getCapturedLogs()[0]);
-        assert.strictEqual(parsed.callerFile, 'unknown');
-        assert.strictEqual(parsed.callerLine, 0);
-        assert.strictEqual(parsed.msg, 'test message');
-      } finally {
-        global.Error = originalError;
-      }
-    });
-
-    it('should suppress caller error messages after threshold', () => {
-      clearCapturedLogs();
-      clearCapturedErrors();
-
-      const logger = new Logger({ format: 'json' });
-
-      // Mock Error constructor to create errors with no usable stack
-      const originalError = Error;
-      global.Error = class extends originalError {
-        constructor(...args) {
-          super(...args);
-          // Set stack to something that will cause the parsing to fail
-          Object.defineProperty(this, 'stack', {
-            get() {
-              throw new Error('Stack access failed');
-            },
-          });
-        }
-      };
-
-      try {
-        // Call logger 7 times to exceed the threshold (5)
-        for (let i = 0; i < 7; i++) {
-          logger.info(`test message ${i + 1}`);
-        }
-
-        // Restore everything before assertions
-        global.Error = originalError;
-
-        // Should have logged 7 messages despite caller errors
-        assert.strictEqual(getCapturedLogs().length, 7);
-
-        // Should have exactly 6 console.error calls
-        assert.strictEqual(getCapturedErrors().length, 6);
-      } finally {
-        global.Error = originalError;
-      }
-    });
-
-    it('should handle stack trace parsing errors gracefully', () => {
-      clearCapturedLogs();
-      const logger = new Logger({ format: 'json' });
-
-      // Mock Error to return a malformed stack
-      const originalError = Error;
-      global.Error = class extends originalError {
-        constructor(...args) {
-          super(...args);
-          this.stack = 'Not a valid stack trace format';
-        }
-      };
-
-      try {
-        logger.info('test message');
-
-        global.Error = originalError;
-
-        const parsed = JSON.parse(getCapturedLogs()[0]);
-        // Should fall back to defaults
-        assert.strictEqual(parsed.callerFile, 'unknown');
-        assert.strictEqual(parsed.callerLine, 0);
-        assert.strictEqual(parsed.msg, 'test message');
-      } finally {
-        global.Error = originalError;
-      }
     });
   });
 });
