@@ -102,7 +102,7 @@ logger.error('Something failed');
 ```
 
 ```
-[2025-06-02T12:00:00.000Z] [ERROR] [app.js:15] Something failed
+[2025-07-04 22:50] [ERROR] [basic.js:3] Something failed
 ```
 
 ### Message Formatting
