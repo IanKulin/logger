@@ -16,3 +16,9 @@ simple_logger.warn('This is a warning');
 simple_logger.debug('This is a debug message'); // This won't be logged if level is set to 'info'
 simple_logger.level('error');
 simple_logger.debug('This is a debug message'); // This won't be logged if level is set to 'info' or higher
+
+const longLogger = new Logger({ time: 'long', format: 'simple' });
+const shortLogger = new Logger({ time: 'short', format: 'simple' });
+
+longLogger.info('This uses long time format');
+shortLogger.info('This uses short time format');

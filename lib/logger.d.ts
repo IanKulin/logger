@@ -36,6 +36,7 @@ export interface LoggerOptions {
   level?: LogLevel;
   levels?: Partial<LogLevels>;
   format?: 'json' | 'simple';
+  time?: 'long' | 'short';
   colours?: Partial<Colours>;
 }
 
@@ -53,12 +54,12 @@ export default class Logger {
   simpleFormatter(logEntry: LogEntry): string;
   getCallerInfo(): { callerFile: string; callerLine: number };
   log(level: LogLevel, message: any, ...args: any[]): void;
-  
+
   error(message: any, ...args: any[]): void;
   warn(message: any, ...args: any[]): void;
   info(message: any, ...args: any[]): void;
   debug(message: any, ...args: any[]): void;
-  
+
   level(): LogLevel;
   level(newLevel: LogLevel): LogLevel;
   setLevel(): LogLevel;
