@@ -25,8 +25,8 @@ export interface LogEntry {
   pid: number;
   hostname: string;
   msg: string;
-  callerFile: string;
-  callerLine: number;
+  callerFile?: string;
+  callerLine?: number;
   [key: string]: any;
 }
 
@@ -37,6 +37,7 @@ export interface LoggerOptions {
   levels?: Partial<LogLevels>;
   format?: 'json' | 'simple';
   time?: 'long' | 'short';
+  callerLevel?: LogLevel;
   colours?: Partial<Colours>;
 }
 

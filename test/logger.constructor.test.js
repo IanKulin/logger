@@ -22,6 +22,12 @@ describe('Logger Constructor', () => {
       }, /Invalid time: invalid. Valid times are: long, short/);
     });
 
+    it('should throw error for invalid callerLevel', () => {
+      assert.throws(() => {
+        new Logger({ callerLevel: 'invalid' });
+      }, /Invalid callerLevel: invalid. Valid levels are: silent, error, warn, info, debug/);
+    });
+
     it('should throw error for non-object colours', () => {
       assert.throws(() => {
         new Logger({ colours: 'not an object' });
@@ -54,6 +60,7 @@ describe('Logger Constructor', () => {
           level: 'debug',
           format: 'simple',
           time: 'long',
+          callerLevel: 'error',
           colours: { error: '\x1b[31m' },
           levels: { custom: 4 },
         });
@@ -67,6 +74,7 @@ describe('Logger Constructor', () => {
       assert.strictEqual(logger.options.level, 'info');
       assert.strictEqual(logger.options.format, 'json');
       assert.strictEqual(logger.options.time, 'short');
+      assert.strictEqual(logger.options.callerLevel, 'warn');
       assert.deepStrictEqual(logger.options.levels, {
         silent: -1,
         error: 0,
@@ -81,10 +89,12 @@ describe('Logger Constructor', () => {
         level: 'debug',
         format: 'simple',
         time: 'long',
+        callerLevel: 'error',
       });
       assert.strictEqual(logger.options.level, 'debug');
       assert.strictEqual(logger.options.format, 'simple');
       assert.strictEqual(logger.options.time, 'long');
+      assert.strictEqual(logger.options.callerLevel, 'error');
     });
 
     it('should merge options correctly', () => {

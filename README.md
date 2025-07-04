@@ -280,8 +280,8 @@ const logger = new Logger({ level: 'silent' });
 
 ## Versions
 
-- **1.1.0** - added { time: 'short' } default option, refactor tests
-- **1.0.2** - Added types for intellisense
-- **1.0.0** - Production release
-- **0.1.6** - Added tests, improved error handling, caller detection loop prevention, `silent` logging level
 - **0.1.5** - Initial release
+- **0.1.6** - Added tests, improved error handling, caller detection loop prevention, `silent` logging level
+- **1.0.0** - Production release
+- **1.0.2** - Added types for intellisense
+- **1.1.0** - added { time: 'short' } option, refactor tests, added { callerLevel: 'warn' } option

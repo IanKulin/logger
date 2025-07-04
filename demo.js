@@ -22,3 +22,38 @@ const shortLogger = new Logger({ time: 'short', format: 'simple' });
 
 longLogger.info('This uses long time format');
 shortLogger.info('This uses short time format');
+
+// Demonstrate callerLevel functionality
+console.log('\n=== Caller Level Demo ===');
+
+// Default callerLevel is 'warn' - only errors and warnings include caller info
+const defaultCallerLogger = new Logger({ format: 'simple' });
+console.log(
+  'Default callerLevel (warn) - only errors and warnings show caller info:'
+);
+defaultCallerLogger.error('Error with caller info');
+defaultCallerLogger.warn('Warning with caller info');
+defaultCallerLogger.info('Info without caller info');
+defaultCallerLogger.debug('Debug without caller info');
+
+// Set callerLevel to 'error' - only errors include caller info
+const errorOnlyLogger = new Logger({ format: 'simple', callerLevel: 'error' });
+console.log('\nCallerLevel set to error - only errors show caller info:');
+errorOnlyLogger.error('Error with caller info');
+errorOnlyLogger.warn('Warning without caller info');
+errorOnlyLogger.info('Info without caller info');
+
+// Set callerLevel to 'debug' - all levels include caller info
+const allLevelsLogger = new Logger({ format: 'simple', callerLevel: 'debug' });
+console.log('\nCallerLevel set to debug - all levels show caller info:');
+allLevelsLogger.error('Error with caller info');
+allLevelsLogger.warn('Warning with caller info');
+allLevelsLogger.info('Info with caller info');
+allLevelsLogger.debug('Debug with caller info');
+
+// Set callerLevel to 'silent' - no levels include caller info
+const noneLogger = new Logger({ format: 'simple', callerLevel: 'silent' });
+console.log('\nCallerLevel set to silent - no levels show caller info:');
+noneLogger.error('Error without caller info');
+noneLogger.warn('Warning without caller info');
+noneLogger.info('Info without caller info');
