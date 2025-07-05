@@ -109,6 +109,23 @@ logger.error('Something failed');
 
 The logger uses Node.js `util.format()` for message formatting with placeholders like `%s`, `%d`, `%j`.
 
+```js
+const logger = new Logger({ format: 'json' });
+
+// String formatting
+logger.info('User %s has %d points', 'john', 100);
+// Output: {"level":"info","msg":"User john has 100 points",...}
+
+// JSON formatting
+logger.info('Config: %j', { debug: true, port: 3000 });
+// Output: {"level":"info","msg":"Config: {\"debug\":true,\"port\":3000}",...}
+
+// Simple format example
+const simpleLogger = new Logger({ format: 'simple' });
+simpleLogger.warn('Processing file %s (%d bytes)', 'data.txt', 1024);
+// Output: [2025-07-05 10:30] [WARN ] [app.js:15] Processing file data.txt (1024 bytes)
+```
+
 ### Custom Colors
 
 ```js
