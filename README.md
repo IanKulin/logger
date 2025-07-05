@@ -44,7 +44,7 @@ logger.debug('Debug info'); // Won't be shown (level is 'info')
 
 ### Log Levels
 
-The logger supports five log levels (from most to least verbose):
+The logger supports five log levels (from least to most verbose):
 
 - `silent` - Suppresses all output
 - `error` - Only error messages
@@ -67,9 +67,6 @@ logger.info('This will not be logged');
 
 // Get current level
 console.log(logger.level()); // 'error'
-
-// Alternative setter method
-logger.setLevel('warn');
 ```
 
 ### Output Formats
