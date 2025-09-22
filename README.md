@@ -222,3 +222,4 @@ const testLogger = new Logger({ level: 'silent' });
 - **1.0.0** - Production release
 - **1.0.2** - Added types for intellisense
 - **1.1.0** - added { time: 'short' } option, refactor tests, added { callerLevel: 'warn' } option
+- **1.1.2** - dependencies update following [chalk supply chain attack](https://www.bleepingcomputer.com/news/security/self-propagating-supply-chain-attack-hits-187-npm-packages/) although not affected.
