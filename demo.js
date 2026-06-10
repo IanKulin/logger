@@ -57,3 +57,13 @@ console.log('\nCallerLevel set to silent - no levels show caller info:');
 noneLogger.error('Error without caller info');
 noneLogger.warn('Warning without caller info');
 noneLogger.info('Info without caller info');
+
+// Demonstrate file/stream output
+import { createWriteStream } from 'fs';
+console.log('\n=== File/Stream Output Demo ===');
+
+const fileStream = createWriteStream('delete_me.log');
+const fileLogger = new Logger({ level: 'debug', format: 'json', stream: fileStream });
+fileLogger.info('This line goes to the file, not console');
+fileLogger.error('Stream error example');
+fileStream.end(() => console.log('Wrote to delete_me.log'));

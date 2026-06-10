@@ -39,10 +39,11 @@ export interface LoggerOptions {
   time?: 'long' | 'short';
   callerLevel?: LogLevel;
   colours?: Partial<Colours>;
+  stream?: NodeJS.WritableStream | null;
 }
 
 export default class Logger {
-  options: Required<LoggerOptions> & { levels: LogLevels; colours: Colours };
+  options: Required<LoggerOptions> & { levels: LogLevels; colours: Colours; stream: NodeJS.WritableStream | null };
   isRedirected: boolean;
   formatters: { [key: string]: Formatter };
   callerErrorCount: number;

@@ -1,6 +1,6 @@
 # logger [![NPM version](https://img.shields.io/npm/v/@iankulin/logger.svg?style=flat)](https://www.npmjs.com/package/@iankulin/logger) [![NPM total downloads](https://img.shields.io/npm/dt/@iankulin/logger.svg?style=flat)](https://npmjs.org/package/@iankulin/logger)
 
-> Flexible console logging utility with colors, and multiple output formats
+> Flexible logging utility for Node.js with console and file output, colors, and multiple formats
 
 ## Features
 
@@ -8,6 +8,7 @@
 - **Flexible output formats**: JSON or simple text
 - **Caller detection**: Automatically identifies source file and line number based on log level
 - **Color support**: Automatic TTY detection with colored output
+- **File output**: Write logs to any Writable stream (file, network socket, etc.)
 - **ESM only**: Modern ES module support
 
 ## Install
@@ -174,6 +175,53 @@ logger.debug('Debug message'); // No caller info
 
 **Performance Tip:** For production applications that primarily log info/debug messages, setting `callerLevel: 'error'` can significantly improve performance by avoiding expensive stack trace analysis for routine logging.
 
+### File Output
+
+Pass any Node.js `Writable` stream as the `stream` option to redirect log output away from the console. The logger writes each line followed by a newline character. ANSI color codes are not included in stream output.
+
+#### Write logs to a file
+
+```js
+import Logger from '@iankulin/logger';
+import { createWriteStream } from 'fs';
+
+const fileStream = createWriteStream('/var/log/app.log', { flags: 'a' });
+const logger = new Logger({
+  level: 'info',
+  format: 'json',
+  stream: fileStream,
+});
+
+logger.info('Server started on port 3000');
+logger.error('Database connection failed');
+```
+
+#### Logging to both console and file
+
+Use two logger instances — one for each destination:
+
+```js
+import Logger from '@iankulin/logger';
+import { createWriteStream } from 'fs';
+
+const fileStream = createWriteStream('/var/log/app.log', { flags: 'a' });
+
+const consoleLogger = new Logger({ level: 'info', format: 'simple' });
+const fileLogger    = new Logger({ level: 'debug', format: 'json', stream: fileStream });
+
+function log(level, msg, ...args) {
+  consoleLogger[level](msg, ...args);
+  fileLogger[level](msg, ...args);
+}
+
+log('info', 'Application ready');
+log('error', 'Unhandled exception: %s', err.message);
+```
+
+#### Stream error handling
+
+If the stream emits an error (e.g. disk full, broken pipe), the logger writes a diagnostic message to `process.stderr` and continues — it does not throw, and does not crash your process. You should attach your own `error` listener to the stream if you need custom error recovery.
+
 ## Constructor Options
 
 | Option        | Type   | Default   | Description                                                                                     |
@@ -183,6 +231,7 @@ logger.debug('Debug message'); // No caller info
 | `callerLevel` | string | `'warn'`  | Minimum log level to include caller info (`'silent'`, `'error'`, `'warn'`, `'info'`, `'debug'`) |
 | `colours`     | object | See below | Color codes for each log level                                                                  |
 | `levels`      | object | See below | Custom level names and numeric values                                                           |
+| `stream`      | Writable \| null | `null` | Output destination. When `null` (default) logs go to the console. Pass any Node.js `Writable` to redirect output (colors are suppressed). |
 
 ## Common Usage Patterns
 
@@ -204,6 +253,16 @@ const devLogger = new Logger({
 
 // Testing: Silent mode
 const testLogger = new Logger({ level: 'silent' });
+
+// Production: JSON to file, no console output
+import { createWriteStream } from 'fs';
+const logFile = createWriteStream('/var/log/app.log', { flags: 'a' });
+const prodLogger = new Logger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: 'json',
+  callerLevel: 'error',
+  stream: logFile,
+});
 ```
 
 ## Requirements
@@ -224,3 +283,4 @@ const testLogger = new Logger({ level: 'silent' });
 - **1.1.0** - added { time: 'short' } option, refactor tests, added { callerLevel: 'warn' } option
 - **1.1.2** - dependencies update following [chalk supply chain attack](https://www.bleepingcomputer.com/news/security/self-propagating-supply-chain-attack-hits-187-npm-packages/) although not affected.
 - **1.1.3** - NPM publish via GitHub workflow
+- **1.2.0** - File output via `stream` option
