@@ -1,4 +1,5 @@
-# logger [![NPM version](https://img.shields.io/npm/v/@iankulin/logger.svg?style=flat)](https://www.npmjs.com/package/@iankulin/logger) [![NPM total downloads](https://img.shields.io/npm/dt/@iankulin/logger.svg?style=flat)](https://npmjs.org/package/@iankulin/logger)
+# logger ![NPM Version](https://img.shields.io/npm/v/%40iankulin%2Flogger) ![NPM Downloads](https://img.shields.io/npm/d18m/%40iankulin%2Flogger)
+
 
 > Flexible logging utility for Node.js with console and file output, colors, and multiple formats
 
